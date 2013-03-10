@@ -80,7 +80,7 @@ else
 
   robot.alias = Options.alias
 
-  loadScripts = ->
+  robot.adapter.on 'connected', ->
     scriptsPath = Path.resolve ".", "scripts"
     robot.load scriptsPath
 
@@ -118,7 +118,5 @@ else
       else
         scriptsPath = Path.resolve ".", path
       robot.load scriptsPath
-
-  robot.adapter.on 'connected', loadScripts
 
   robot.run()
