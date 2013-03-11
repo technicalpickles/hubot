@@ -84,8 +84,8 @@ else
     scriptsPath = Path.resolve ".", "scripts"
     robot.load scriptsPath
 
-    scriptsPath = Path.resolve ".", "src", "scripts"
-    robot.load scriptsPath
+    srcScriptsPath = Path.resolve ".", "src", "scripts"
+    robot.load srcScriptsPath
 
     hubotScripts = Path.resolve ".", "hubot-scripts.json"
     Fs.exists hubotScripts, (exists) ->
@@ -94,8 +94,8 @@ else
           if data.length > 0
             try
               scripts = JSON.parse data
-              scriptsPath = Path.resolve "node_modules", "hubot-scripts", "src", "scripts"
-              robot.loadHubotScripts scriptsPath, scripts
+              hubotScriptsPath = Path.resolve "node_modules", "hubot-scripts", "src", "scripts"
+              robot.loadHubotScripts hubotScriptsPath, scripts
             catch err
               console.error "Error parsing JSON data from hubot-scripts.json: #{err}"
               process.exit(1)
