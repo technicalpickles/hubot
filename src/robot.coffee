@@ -43,9 +43,11 @@ class Robot
     @Response     = Response
     @commands     = []
     @listeners    = []
+    @root         = "."
     @logger       = new Log process.env.HUBOT_LOG_LEVEL or 'info'
 
     @parseVersion()
+    @parseHubotScriptsConfig()
     @setupConnect() if httpd
     @loadAdapter adapterPath, adapter if adapter?
 
@@ -163,9 +165,9 @@ class Robot
   # scripts - An Array of scripts to load.
   #
   # Returns nothing.
-  loadHubotScripts: (path, scripts) ->
-    @logger.debug "Loading hubot-scripts from #{path}"
-    for script in scripts
+  loadHubotScripts: () ->
+    @logger.debug "Loading hubot-scripts from #{@hubotScriptsPath}"
+    for script in @hubotScripts
       @loadFile path, script
 
   # Public: Load scripts from packages specfied in the
@@ -401,5 +403,20 @@ class Robot
   # Returns a ScopedClient instance.
   http: (url) ->
     HttpClient.create(url)
+
+  parseHubotScriptsConfig: () ->
+    hubotScriptsJsonPath = Path.resolve root, "hubot-scripts.json"
+    Fs.exists hubotScriptsJsonPath, (exists) ->
+      if exists
+        Fs.readFile hubotScriptsJsonPath, (err, data) ->
+          if data.length > 0
+            try
+              @hubotScripts = JSON.parse data
+              @hubotScriptsPath = Path.resolve root, "node_modules", "hubot-scripts", "src", "scripts"
+            catch err
+              console.error "Error parsing JSON data from hubot-scripts.json: #{err}"
+              # TODO emit StartupError instead
+              process.exit(1)
+
 
 module.exports = Robot
