@@ -11,23 +11,11 @@ Response = require './response'
 {Listener,TextListener} = require './listener'
 {EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage} = require './message'
 Middleware = require './middleware'
+Script = require './script'
 
 HUBOT_DEFAULT_ADAPTERS = [
   'campfire'
   'shell'
-]
-
-HUBOT_DOCUMENTATION_SECTIONS = [
-  'description'
-  'dependencies'
-  'configuration'
-  'commands'
-  'notes'
-  'author'
-  'authors'
-  'examples'
-  'tags'
-  'urls'
 ]
 
 class Robot
@@ -59,6 +47,7 @@ class Robot
     @pingIntervalId = null
     @globalHttpOptions = {}
     @scriptDocumentation = {}
+    @scripts = {}
 
     @parseVersion()
     if httpd
@@ -349,21 +338,13 @@ class Robot
   #
   # Returns nothing.
   loadFile: (path, file) ->
-    ext  = Path.extname file
-    full = Path.join path, Path.basename(file, ext)
-    if require.extensions[ext]
-      try
-        script = require(full)
+    full = Path.join path, file
+    script = Script.load(@, full)
 
-        if typeof script is 'function'
-          script @
-          @parseHelp Path.join(path, file)
-        else
-          @logger.warning "Expected #{full} to assign a function to module.exports, got #{typeof script}"
-
-      catch error
-        @logger.error "Unable to load #{full}: #{error.stack}"
-        process.exit(1)
+    @scripts[script.name] = script
+    @scriptDocumentation[script.name] = script.documentation
+    @commands.concat script.commands
+    undefined
 
   # Public: Loads every script in the given path.
   #
@@ -497,43 +478,8 @@ class Robot
   #
   # Returns nothing.
   parseHelp: (path) ->
-    @logger.debug "Parsing help for #{path}"
-    scriptName = Path.basename(path).replace /\.(coffee|js)$/, ''
-    scriptDocumentation = {}
-
-    body = Fs.readFileSync path, 'utf-8'
-
-    currentSection = null
-    for line in body.split "\n"
-      break unless line[0] is '#' or line.substr(0, 2) is '//'
-
-      cleanedLine = line.replace(/^(#|\/\/)\s?/, "").trim()
-
-      continue if cleanedLine.length is 0
-      continue if cleanedLine.toLowerCase() is 'none'
-
-      nextSection = cleanedLine.toLowerCase().replace(':', '')
-      if nextSection in HUBOT_DOCUMENTATION_SECTIONS
-        currentSection = nextSection
-        scriptDocumentation[currentSection] = []
-      else
-        if currentSection
-          scriptDocumentation[currentSection].push cleanedLine.trim()
-          if currentSection is 'commands'
-            @commands.push cleanedLine.trim()
-
-    if currentSection is null
-      @logger.info "#{path} is using deprecated documentation syntax"
-      scriptDocumentation.commands = []
-      for line in body.split("\n")
-        break    if not (line[0] is '#' or line.substr(0, 2) is '//')
-        continue if not line.match('-')
-        cleanedLine = line[2..line.length].replace(/^hubot/i, @name).trim()
-        scriptDocumentation.commands.push cleanedLine
-        @commands.push cleanedLine
-
-    @scriptDocumentation[scriptName] = scriptDocumentation
-    true
+    Script.parseHelp(@, path)
+    undefined
 
   # Public: A helper send function which delegates to the adapter's send
   # function.
