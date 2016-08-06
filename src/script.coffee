@@ -72,7 +72,6 @@ class Script
         cleanedLine = line[2..line.length].replace(/^hubot/i, @name).trim()
         @documentation.commands.push cleanedLine
         @commands.push cleanedLine
-        @robot.commands.push cleanedLine
 
     true
 
