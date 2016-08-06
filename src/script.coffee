@@ -1,5 +1,7 @@
+Reflect        = require('harmony-reflect');
 Path           = require 'path'
 Fs             = require 'fs'
+{inspect}      = require 'util'
 
 HUBOT_DOCUMENTATION_SECTIONS = [
   'description'
@@ -20,7 +22,22 @@ class Script
     @documentation = {}
     @commands = []
     @logger = @robot?.logger
+    @listeners = listeners = []
     @name = Path.basename(@path).replace /\.(coffee|js)$/, ''
+
+    robotHandler =
+      get: (target, key) ->
+        if key in ['listen', 'hear', 'respond']
+          listenerHandler =
+            apply: (target, ctx, args) ->
+              console.log "intercepted respond(#{inspect args})"
+              listener = Reflect.apply(arguments...)
+              listeners.push(listener)
+              listener
+          new Proxy(target[key], listenerHandler)
+        else
+          target[key]
+    @robotProxy = new Proxy(@robot, robotHandler)
 
   load: () ->
     ext  = Path.extname @path
@@ -30,7 +47,7 @@ class Script
         script = require(path_without_ext)
 
         if typeof script is 'function'
-          script @robot
+          script @robotProxy
           @parseHelp @path
         else
           @logger.warning "Expected #{@path} to assign a function to module.exports, got #{typeof script}"

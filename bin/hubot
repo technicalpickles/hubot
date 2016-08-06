@@ -1,4 +1,4 @@
-#!/usr/bin/env coffee
+#!/usr/bin/env coffee --nodejs --harmony_proxies
 # vim:ft=coffee ts=2 sw=2 et :
 # -*- mode:coffee -*-
 
