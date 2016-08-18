@@ -73,12 +73,21 @@ class Script
       nextSection = cleanedLine.toLowerCase().replace(':', '')
       if nextSection in HUBOT_DOCUMENTATION_SECTIONS
         currentSection = nextSection
-        @documentation[currentSection] = []
+        if currentSection is 'commands'
+          @documentation[currentSection] = []
+        else
+          @documentation[currentSection] = ""
+
       else
         if currentSection
-          @documentation[currentSection].push cleanedLine.trim()
           if currentSection is 'commands'
-            @commands.push cleanedLine.trim()
+            @documentation[currentSection].push cleanedLine
+          else
+            if @documentation[currentSection].length > 0
+              # TODO maybe sanity check description being more than one line?
+              cleanedLine = "\n#{cleanedLine}"
+
+            @documentation[currentSection] = @documentation[currentSection].concat(cleanedLine)
 
     if currentSection is null
       @logger.info "#{@path} is using deprecated documentation syntax"
