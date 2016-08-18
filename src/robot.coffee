@@ -341,9 +341,12 @@ class Robot
     full = Path.join path, file
     script = Script.load(@, full)
 
+    # TODO document this event, maybe rename?
+    @emit 'script-loaded', script
+
     @scripts[script.name] = script
     @scriptDocumentation[script.name] = script.documentation
-    @commands.concat script.commands
+    @commands.concat script.documentation.commands
     undefined
 
   # Public: Loads every script in the given path.
