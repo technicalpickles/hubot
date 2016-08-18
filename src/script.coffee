@@ -25,12 +25,13 @@ class Script
     @listeners = listeners = []
     @name = Path.basename(@path).replace /\.(coffee|js)$/, ''
 
+    # TODO try not to rely on proxy objects here
     robotHandler =
       get: (target, key) ->
         if key in ['listen', 'hear', 'respond']
           listenerHandler =
             apply: (target, ctx, args) ->
-              console.log "intercepted respond(#{inspect args})"
+              # console.log "intercepted respond(#{inspect args})"
               listener = Reflect.apply(arguments...)
               listeners.push(listener)
               listener
