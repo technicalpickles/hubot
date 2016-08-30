@@ -77,9 +77,11 @@ class Robot
   # callback - A Function that is called with a Response object if the
   #            matcher function returns true.
   #
-  # Returns nothing.
+  # Returns the the listener.
   listen: (matcher, options, callback) ->
-    @listeners.push new Listener(@, matcher, options, callback)
+    listener = new Listener(@, matcher, options, callback)
+    @listeners.push listener
+    listener
 
   # Public: Adds a Listener that attempts to match incoming messages based on
   # a Regex.
@@ -89,9 +91,12 @@ class Robot
   #            (optional).
   # callback - A Function that is called with a Response object.
   #
-  # Returns nothing.
+  # Returns the listener.
   hear: (regex, options, callback) ->
-    @listeners.push new TextListener(@, regex, options, callback)
+    listener = new TextListener(@, regex, options, callback)
+    @listeners.push listener
+    listener
+
 
   # Public: Adds a Listener that attempts to match incoming messages directed
   # at the robot based on a Regex. All regexes treat patterns like they begin
@@ -102,7 +107,7 @@ class Robot
   #            (optional).
   # callback - A Function that is called with a Response object.
   #
-  # Returns nothing.
+  # Returns the listener.
   respond: (regex, options, callback) ->
     @hear(@respondPattern(regex), options, callback)
 
