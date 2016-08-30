@@ -28,10 +28,10 @@ class Script
     # TODO try not to rely on proxy objects here
     robotHandler =
       get: (target, key) ->
-        if key in ['listen', 'hear', 'respond']
+        # don't do respond, since it uses hear under the hood
+        if key in ['listen', 'hear']
           listenerHandler =
             apply: (target, ctx, args) ->
-              # console.log "intercepted respond(#{inspect args})"
               listener = Reflect.apply(arguments...)
               listeners.push(listener)
               listener
