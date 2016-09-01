@@ -19,7 +19,10 @@ HUBOT_DOCUMENTATION_SECTIONS = [
 class Script
   constructor: (@robot, @path) ->
     @listeners = []
-    @documentation = {}
+    # FIXME assigning local scope so the robot handler can access is a little weird
+    @documentation = documentation = {}
+    @documentation.commands = []
+    # FIXME is this still used? prefer @documentation.commands
     @commands = []
     @logger = @robot?.logger
     @listeners = listeners = []
@@ -34,6 +37,11 @@ class Script
             apply: (target, ctx, args) ->
               listener = Reflect.apply(arguments...)
               listeners.push(listener)
+
+              help = listener?.options?.help
+              if help?
+                documentation.commands.push help
+
               listener
           new Proxy(target[key], listenerHandler)
         else
