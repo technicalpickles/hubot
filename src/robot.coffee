@@ -351,7 +351,9 @@ class Robot
 
     @scripts[script.name] = script
     @scriptDocumentation[script.name] = script.documentation
-    @commands.concat script.documentation.commands
+
+    for command in script.documentation.commands
+      @commands.push command.command_with_description
     undefined
 
   # Public: Loads every script in the given path.
