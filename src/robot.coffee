@@ -413,6 +413,8 @@ class Robot
 
     app = express()
 
+    # FIXME sort of implication of adding this and if there's any config needed
+    app.use(express.logger('dev'))
     app.use (req, res, next) =>
       res.setHeader "X-Powered-By", "hubot/#{@name}"
       next()
