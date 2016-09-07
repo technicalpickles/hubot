@@ -1,6 +1,7 @@
 Reflect        = require('harmony-reflect');
 Path           = require 'path'
 Fs             = require 'fs'
+{parseCommandHelp} = require('./listener')
 {inspect}      = require 'util'
 
 HUBOT_DOCUMENTATION_SECTIONS = [
@@ -28,9 +29,6 @@ class Script
     @logger = @robot?.logger
     @name = Path.basename(@path).replace /\.(coffee|js)$/, ''
 
-    # local scope for the method below
-    parseCommand = @parseCommand
-
     # TODO try not to rely on proxy objects here
     robotHandler =
       get: (target, key) ->
@@ -42,12 +40,6 @@ class Script
               listeners.push(listener)
               listener.script = script
 
-              help = listener?.options?.help
-              if help?
-                if Array.isArray(help)
-                  documentation.commands.push parseCommand(command) for command in help
-                else
-                  documentation.commands.push parseCommand(help)
               listener
           new Proxy(target[key], listenerHandler)
         else
@@ -71,14 +63,6 @@ class Script
         @logger.error "Unable to load #{@path}: #{error.stack}"
         # FIXME throw error instead of exit
         process.exit(1)
-
-  parseCommand: (command) ->
-    split = command.split(" - ")
-    if split.length is 2
-      {command: split[0], description: split[1], command_with_description: command}
-    else
-      @robot.logger.warning "Couldn't split '#{command}' into 2 strings for output"
-      {command: command, command_with_description: command}
 
   parseHelp: () ->
     @logger.debug "Parsing help for #{@path}"
@@ -104,7 +88,7 @@ class Script
       else
         if currentSection
           if currentSection is 'commands'
-            @documentation[currentSection].push @parseCommand(cleanedLine)
+            @documentation[currentSection].push parseCommandHelp(cleanedLine)
           else
             if @documentation[currentSection].length > 0
               # TODO maybe sanity check description being more than one line?

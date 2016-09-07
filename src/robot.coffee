@@ -80,6 +80,7 @@ class Robot
   # Returns the the listener.
   listen: (matcher, options, callback) ->
     listener = new Listener(@, matcher, options, callback)
+    console.log require('util').inspect options
     @listeners.push listener
     listener
 
@@ -94,6 +95,7 @@ class Robot
   # Returns the listener.
   hear: (regex, options, callback) ->
     listener = new TextListener(@, regex, options, callback)
+    console.log require('util').inspect options
     @listeners.push listener
     listener
 

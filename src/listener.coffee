@@ -4,6 +4,15 @@ async     = require 'async'
 {TextMessage} = require './message'
 Middleware = require './middleware'
 
+# FIXME duplication with script.coffee
+parseCommandHelp = (help) ->
+  split = help.split(" - ")
+  if split.length is 2
+    {command: split[0], description: split[1], command_with_description: help}
+  else
+    @robot.logger.warning "Couldn't split '#{command}' into 2 strings for output"
+    {command: help, command_with_description: help}
+
 class Listener
   # Listeners receive every message from the chat source and decide if they
   # want to act on it.
@@ -29,6 +38,16 @@ class Listener
 
     if not @callback? or typeof @callback != 'function'
       throw new Error "Missing a callback for Listener"
+
+    @help = if @options.help?
+      # TODO is there a better way to coerce to an array?
+      unless Array.isArray(@options.help)
+        [@options.help]
+      else
+        @options.help
+    else
+      []
+    @help = (parseCommandHelp(help) for help in @help)
 
   # Public: Determines if the listener likes the content of the message. If
   # so, a Response built from the given Message is passed through all
@@ -88,6 +107,7 @@ class Listener
         process.nextTick -> cb false
       false
 
+
 class TextListener extends Listener
   # TextListeners receive every message from the chat source and decide if they
   # want to act on it.
@@ -107,4 +127,5 @@ class TextListener extends Listener
 module.exports = {
   Listener
   TextListener
+  parseCommandHelp
 }
