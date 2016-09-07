@@ -37,8 +37,11 @@ class Script
           listenerHandler =
             apply: (target, ctx, args) ->
               listener = Reflect.apply(arguments...)
-              listeners.push(listener)
               listener.script = script
+              for help in listener.help
+                documentation.commands.push help
+
+              listeners.push(listener)
 
               listener
           new Proxy(target[key], listenerHandler)
