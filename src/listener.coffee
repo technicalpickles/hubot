@@ -4,7 +4,6 @@ async     = require 'async'
 {TextMessage} = require './message'
 Middleware = require './middleware'
 
-# FIXME duplication with script.coffee
 parseCommandHelp = (help) ->
   split = help.split(" - ")
   if split.length is 2
