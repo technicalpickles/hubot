@@ -20,6 +20,7 @@ const switches = [
 ]
 
 const options = {
+  adapters: [],
   adapter: process.env.HUBOT_ADAPTER || 'shell',
   alias: process.env.HUBOT_ALIAS || false,
   create: process.env.HUBOT_CREATE || false,
@@ -34,7 +35,7 @@ const Parser = new OptParse.OptionParser(switches)
 Parser.banner = 'Usage hubot [options]'
 
 Parser.on('adapter', (opt, value) => {
-  options.adapter = value
+  options.adapters.push(value)
 })
 
 Parser.on('create', function (opt, value) {
@@ -94,7 +95,7 @@ if (options.create) {
   process.exit(1)
 }
 
-const robot = Hubot.loadBot(undefined, options.adapter, options.enableHttpd, options.name, options.alias)
+const robot = Hubot.loadBot(undefined, options.adapters, options.enableHttpd, options.name, options.alias)
 
 if (options.version) {
   console.log(robot.version)

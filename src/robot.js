@@ -22,10 +22,10 @@ class Robot {
   // dispatch them to matching listeners.
   //
   // adapterPath -  A String of the path to built-in adapters (defaults to src/adapters)
-  // adapter     - A String of the adapter name.
+  // adapters    - A String of the adapter name or an Array of Strings of names of adapters.
   // httpd       - A Boolean whether to enable the HTTP daemon.
   // name        - A String of the robot name, defaults to Hubot.
-  constructor (adapterPath, adapter, httpd, name, alias) {
+  constructor (adapterPath, adapters, httpd, name, alias) {
     if (name == null) {
       name = 'Hubot'
     }
@@ -38,7 +38,7 @@ class Robot {
     this.events = new EventEmitter()
     this.brain = new Brain(this)
     this.alias = alias
-    this.adapter = null
+    this.adapters = []
     this.Response = Response
     this.commands = []
     this.listeners = []
@@ -58,9 +58,13 @@ class Robot {
       this.setupNullRouter()
     }
 
-    this.loadAdapter(adapter)
+    for (var i = 0; i < adapters.length; i++) {
+      this.loadAdapter(this.adapterName)
+    }
+    // legacy support
+    this.adapterName = adapters[0]
+    this.adapter = this.adapters[0]
 
-    this.adapterName = adapter
     this.errorHandlers = []
 
     this.on('error', (err, res) => {
@@ -500,7 +504,7 @@ class Robot {
     try {
       const path = Array.from(HUBOT_DEFAULT_ADAPTERS).indexOf(adapter) !== -1 ? `${this.adapterPath}/${adapter}` : `hubot-${adapter}`
 
-      this.adapter = require(path).use(this)
+      this.adapters.push(require(path).use(this))
     } catch (err) {
       this.logger.error(`Cannot load adapter ${adapter} - ${err}`)
       process.exit(1)
